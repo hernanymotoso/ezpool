@@ -8,6 +8,16 @@
 build/*
 !build/index.js
 
+# Ignore image files
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.webp
+**/*.ico
+
 node_modules
 .env.local
 .next
+yarn.lock

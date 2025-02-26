@@ -21,7 +21,10 @@ export function AccountBalance({ address }: { address: PublicKey }) {
 
   return (
     <div>
-      <h1 className="text-5xl font-bold cursor-pointer" onClick={() => query.refetch()}>
+      <h1
+        className="text-5xl font-bold cursor-pointer"
+        onClick={async () => await query.refetch()}
+      >
         {query.data ? <BalanceSol balance={query.data} /> : '...'} SOL
       </h1>
     </div>
@@ -46,11 +49,14 @@ export function AccountBalanceCheck({ address }: { address: PublicKey }) {
     return (
       <div className="alert alert-warning text-warning-content/80 rounded-none flex justify-center">
         <span>
-          You are connected to <strong>{cluster.name}</strong> but your account is not found on this cluster.
+          You are connected to <strong>{cluster.name}</strong> but your account
+          is not found on this cluster.
         </span>
         <button
           className="btn btn-xs btn-neutral"
-          onClick={() => mutation.mutateAsync(1).catch((err) => console.log(err))}
+          onClick={async () =>
+            await mutation.mutateAsync(1).catch(err => console.log(err))
+          }
         >
           Request Airdrop
         </button>
@@ -69,9 +75,21 @@ export function AccountButtons({ address }: { address: PublicKey }) {
 
   return (
     <div>
-      <ModalAirdrop hide={() => setShowAirdropModal(false)} address={address} show={showAirdropModal} />
-      <ModalReceive address={address} show={showReceiveModal} hide={() => setShowReceiveModal(false)} />
-      <ModalSend address={address} show={showSendModal} hide={() => setShowSendModal(false)} />
+      <ModalAirdrop
+        hide={() => setShowAirdropModal(false)}
+        address={address}
+        show={showAirdropModal}
+      />
+      <ModalReceive
+        address={address}
+        show={showReceiveModal}
+        hide={() => setShowReceiveModal(false)}
+      />
+      <ModalSend
+        address={address}
+        show={showSendModal}
+        hide={() => setShowSendModal(false)}
+      />
       <div className="space-x-2">
         <button
           disabled={cluster.network?.includes('mainnet')}
@@ -87,7 +105,10 @@ export function AccountButtons({ address }: { address: PublicKey }) {
         >
           Send
         </button>
-        <button className="btn btn-xs lg:btn-md btn-outline" onClick={() => setShowReceiveModal(true)}>
+        <button
+          className="btn btn-xs lg:btn-md btn-outline"
+          onClick={() => setShowReceiveModal(true)}
+        >
           Receive
         </button>
       </div>
@@ -128,7 +149,11 @@ export function AccountTokens({ address }: { address: PublicKey }) {
           </div>
         </div>
       </div>
-      {query.isError && <pre className="alert alert-error">Error: {query.error?.message.toString()}</pre>}
+      {query.isError && (
+        <pre className="alert alert-error">
+          Error: {query.error?.message.toString()}
+        </pre>
+      )}
       {query.isSuccess && (
         <div>
           {query.data.length === 0 ? (
@@ -148,7 +173,10 @@ export function AccountTokens({ address }: { address: PublicKey }) {
                     <td>
                       <div className="flex space-x-2">
                         <span className="font-mono">
-                          <ExplorerLink label={ellipsify(pubkey.toString())} path={`account/${pubkey.toString()}`} />
+                          <ExplorerLink
+                            label={ellipsify(pubkey.toString())}
+                            path={`account/${pubkey.toString()}`}
+                          />
                         </span>
                       </div>
                     </td>
@@ -163,7 +191,9 @@ export function AccountTokens({ address }: { address: PublicKey }) {
                       </div>
                     </td>
                     <td className="text-right">
-                      <span className="font-mono">{account.data.parsed.info.tokenAmount.uiAmount}</span>
+                      <span className="font-mono">
+                        {account.data.parsed.info.tokenAmount.uiAmount}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -171,7 +201,10 @@ export function AccountTokens({ address }: { address: PublicKey }) {
                 {(query.data?.length ?? 0) > 5 && (
                   <tr>
                     <td colSpan={4} className="text-center">
-                      <button className="btn btn-xs btn-outline" onClick={() => setShowAll(!showAll)}>
+                      <button
+                        className="btn btn-xs btn-outline"
+                        onClick={() => setShowAll(!showAll)}
+                      >
                         {showAll ? 'Show Less' : 'Show All'}
                       </button>
                     </td>
@@ -203,13 +236,20 @@ export function AccountTransactions({ address }: { address: PublicKey }) {
           {query.isLoading ? (
             <span className="loading loading-spinner"></span>
           ) : (
-            <button className="btn btn-sm btn-outline" onClick={() => query.refetch()}>
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={async () => await query.refetch()}
+            >
               <IconRefresh size={16} />
             </button>
           )}
         </div>
       </div>
-      {query.isError && <pre className="alert alert-error">Error: {query.error?.message.toString()}</pre>}
+      {query.isError && (
+        <pre className="alert alert-error">
+          Error: {query.error?.message.toString()}
+        </pre>
+      )}
       {query.isSuccess && (
         <div>
           {query.data.length === 0 ? (
@@ -225,18 +265,29 @@ export function AccountTransactions({ address }: { address: PublicKey }) {
                 </tr>
               </thead>
               <tbody>
-                {items?.map((item) => (
+                {items?.map(item => (
                   <tr key={item.signature}>
                     <th className="font-mono">
-                      <ExplorerLink path={`tx/${item.signature}`} label={ellipsify(item.signature, 8)} />
+                      <ExplorerLink
+                        path={`tx/${item.signature}`}
+                        label={ellipsify(item.signature, 8)}
+                      />
                     </th>
                     <td className="font-mono text-right">
-                      <ExplorerLink path={`block/${item.slot}`} label={item.slot.toString()} />
+                      <ExplorerLink
+                        path={`block/${item.slot}`}
+                        label={item.slot.toString()}
+                      />
                     </td>
-                    <td>{new Date((item.blockTime ?? 0) * 1000).toISOString()}</td>
+                    <td>
+                      {new Date((item.blockTime ?? 0) * 1000).toISOString()}
+                    </td>
                     <td className="text-right">
                       {item.err ? (
-                        <div className="badge badge-error" title={JSON.stringify(item.err)}>
+                        <div
+                          className="badge badge-error"
+                          title={JSON.stringify(item.err)}
+                        >
                           Failed
                         </div>
                       ) : (
@@ -248,7 +299,10 @@ export function AccountTransactions({ address }: { address: PublicKey }) {
                 {(query.data?.length ?? 0) > 5 && (
                   <tr>
                     <td colSpan={4} className="text-center">
-                      <button className="btn btn-xs btn-outline" onClick={() => setShowAll(!showAll)}>
+                      <button
+                        className="btn btn-xs btn-outline"
+                        onClick={() => setShowAll(!showAll)}
+                      >
                         {showAll ? 'Show Less' : 'Show All'}
                       </button>
                     </td>
@@ -264,10 +318,20 @@ export function AccountTransactions({ address }: { address: PublicKey }) {
 }
 
 function BalanceSol({ balance }: { balance: number }) {
-  return <span>{Math.round((balance / LAMPORTS_PER_SOL) * 100000) / 100000}</span>
+  return (
+    <span>{Math.round((balance / LAMPORTS_PER_SOL) * 100000) / 100000}</span>
+  )
 }
 
-function ModalReceive({ hide, show, address }: { hide: () => void; show: boolean; address: PublicKey }) {
+function ModalReceive({
+  hide,
+  show,
+  address,
+}: {
+  hide: () => void
+  show: boolean
+  address: PublicKey
+}) {
   return (
     <AppModal title="Receive" hide={hide} show={show}>
       <p>Receive assets by sending them to your public key:</p>
@@ -276,7 +340,15 @@ function ModalReceive({ hide, show, address }: { hide: () => void; show: boolean
   )
 }
 
-function ModalAirdrop({ hide, show, address }: { hide: () => void; show: boolean; address: PublicKey }) {
+function ModalAirdrop({
+  hide,
+  show,
+  address,
+}: {
+  hide: () => void
+  show: boolean
+  address: PublicKey
+}) {
   const mutation = useRequestAirdrop({ address })
   const [amount, setAmount] = useState('2')
 
@@ -287,7 +359,9 @@ function ModalAirdrop({ hide, show, address }: { hide: () => void; show: boolean
       title="Airdrop"
       submitDisabled={!amount || mutation.isPending}
       submitLabel="Request Airdrop"
-      submit={() => mutation.mutateAsync(parseFloat(amount)).then(() => hide())}
+      submit={async () =>
+        await mutation.mutateAsync(parseFloat(amount)).then(() => hide())
+      }
     >
       <input
         disabled={mutation.isPending}
@@ -297,13 +371,21 @@ function ModalAirdrop({ hide, show, address }: { hide: () => void; show: boolean
         placeholder="Amount"
         className="input input-bordered w-full"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={e => setAmount(e.target.value)}
       />
     </AppModal>
   )
 }
 
-function ModalSend({ hide, show, address }: { hide: () => void; show: boolean; address: PublicKey }) {
+function ModalSend({
+  hide,
+  show,
+  address,
+}: {
+  hide: () => void
+  show: boolean
+  address: PublicKey
+}) {
   const wallet = useWallet()
   const mutation = useTransferSol({ address })
   const [destination, setDestination] = useState('')
@@ -335,7 +417,7 @@ function ModalSend({ hide, show, address }: { hide: () => void; show: boolean; a
         placeholder="Destination"
         className="input input-bordered w-full"
         value={destination}
-        onChange={(e) => setDestination(e.target.value)}
+        onChange={e => setDestination(e.target.value)}
       />
       <input
         disabled={mutation.isPending}
@@ -345,7 +427,7 @@ function ModalSend({ hide, show, address }: { hide: () => void; show: boolean; a
         placeholder="Amount"
         className="input input-bordered w-full"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={e => setAmount(e.target.value)}
       />
     </AppModal>
   )
