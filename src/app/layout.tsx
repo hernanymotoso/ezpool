@@ -1,8 +1,9 @@
-import * as React from 'react'
-import './globals.css'
 import { ClusterProvider } from '@/components/cluster/cluster-data-access'
 import { SolanaProvider } from '@/components/solana/solana-provider'
 import { UiLayout } from '@/components/ui/ui-layout'
+import { StyledComponents } from '@/utils/styled-components'
+import * as React from 'react'
+import './globals.css'
 import { ReactQueryProvider } from './react-query-provider'
 
 export const metadata = {
@@ -11,8 +12,8 @@ export const metadata = {
 }
 
 const links: Array<{ label: string; path: string }> = [
-  { label: 'Account', path: '/account' },
-  { label: 'Clusters', path: '/clusters' },
+  // { label: 'Account', path: '/account' },
+  // { label: 'Clusters', path: '/clusters' },
   { label: 'Ezpool Program', path: '/ezpool' },
 ]
 
@@ -24,13 +25,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ReactQueryProvider>
-          <ClusterProvider>
-            <SolanaProvider>
-              <UiLayout links={links}>{children}</UiLayout>
-            </SolanaProvider>
-          </ClusterProvider>
-        </ReactQueryProvider>
+        <StyledComponents>
+          <ReactQueryProvider>
+            <ClusterProvider>
+              <SolanaProvider>
+                <UiLayout links={links}>{children}</UiLayout>
+              </SolanaProvider>
+            </ClusterProvider>
+          </ReactQueryProvider>
+        </StyledComponents>
       </body>
     </html>
   )
