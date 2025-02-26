@@ -1,0 +1,13 @@
+# Ignore public
+/public/*
+
+# Ignore assets
+/src/assets/*
+
+# Ignore built files except build/index.js
+build/*
+!build/index.js
+
+node_modules
+.env.local
+.next
