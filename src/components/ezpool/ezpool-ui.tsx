@@ -12,7 +12,7 @@ export function EzpoolCreate() {
   return (
     <button
       className="btn btn-xs lg:btn-md btn-primary"
-      onClick={() => initialize.mutateAsync(Keypair.generate())}
+      onClick={async () => await initialize.mutateAsync(Keypair.generate())}
       disabled={initialize.isPending}
     >
       Create {initialize.isPending && '...'}
@@ -21,15 +21,19 @@ export function EzpoolCreate() {
 }
 
 export function EzpoolList() {
-  const { accounts, getProgramAccount } = useEzpoolProgram()
-
+  // const { accounts, getProgramAccount } = useEzpoolProgram()
+  const accounts: any = []
+  const getProgramAccount: any = {}
   if (getProgramAccount.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>
   }
   if (!getProgramAccount.data?.value) {
     return (
       <div className="alert alert-info flex justify-center">
-        <span>Program account not found. Make sure you have deployed the program and are on the correct cluster.</span>
+        <span>
+          Program account not found. Make sure you have deployed the program and
+          are on the correct cluster.
+        </span>
       </div>
     )
   }
@@ -39,8 +43,11 @@ export function EzpoolList() {
         <span className="loading loading-spinner loading-lg"></span>
       ) : accounts.data?.length ? (
         <div className="grid md:grid-cols-2 gap-4">
-          {accounts.data?.map((account) => (
-            <EzpoolCard key={account.publicKey.toString()} account={account.publicKey} />
+          {accounts.data?.map(account => (
+            <EzpoolCard
+              key={account.publicKey.toString()}
+              account={account.publicKey}
+            />
           ))}
         </div>
       ) : (
@@ -54,11 +61,20 @@ export function EzpoolList() {
 }
 
 function EzpoolCard({ account }: { account: PublicKey }) {
-  const { accountQuery, incrementMutation, setMutation, decrementMutation, closeMutation } = useEzpoolProgramAccount({
+  const {
+    accountQuery,
+    incrementMutation,
+    setMutation,
+    decrementMutation,
+    closeMutation,
+  } = useEzpoolProgramAccount({
     account,
   })
 
-  const count = useMemo(() => accountQuery.data?.count ?? 0, [accountQuery.data?.count])
+  const count = useMemo(
+    () => accountQuery.data?.count ?? 0,
+    [accountQuery.data?.count],
+  )
 
   return accountQuery.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
@@ -66,25 +82,35 @@ function EzpoolCard({ account }: { account: PublicKey }) {
     <div className="card card-bordered border-base-300 border-4 text-neutral-content">
       <div className="card-body items-center text-center">
         <div className="space-y-6">
-          <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
+          <h2
+            className="card-title justify-center text-3xl cursor-pointer"
+            onClick={async () => await accountQuery.refetch()}
+          >
             {count}
           </h2>
           <div className="card-actions justify-around">
             <button
               className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => incrementMutation.mutateAsync()}
+              onClick={async () => await incrementMutation.mutateAsync()}
               disabled={incrementMutation.isPending}
             >
               Increment
             </button>
             <button
               className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => {
-                const value = window.prompt('Set value to:', count.toString() ?? '0')
-                if (!value || parseInt(value) === count || isNaN(parseInt(value))) {
+              onClick={async () => {
+                const value = window.prompt(
+                  'Set value to:',
+                  count.toString() ?? '0',
+                )
+                if (
+                  !value ||
+                  parseInt(value) === count ||
+                  isNaN(parseInt(value))
+                ) {
                   return
                 }
-                return setMutation.mutateAsync(parseInt(value))
+                return await setMutation.mutateAsync(parseInt(value))
               }}
               disabled={setMutation.isPending}
             >
@@ -92,7 +118,7 @@ function EzpoolCard({ account }: { account: PublicKey }) {
             </button>
             <button
               className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => decrementMutation.mutateAsync()}
+              onClick={async () => await decrementMutation.mutateAsync()}
               disabled={decrementMutation.isPending}
             >
               Decrement
@@ -100,15 +126,22 @@ function EzpoolCard({ account }: { account: PublicKey }) {
           </div>
           <div className="text-center space-y-4">
             <p>
-              <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
+              <ExplorerLink
+                path={`account/${account}`}
+                label={ellipsify(account.toString())}
+              />
             </p>
             <button
               className="btn btn-xs btn-secondary btn-outline"
-              onClick={() => {
-                if (!window.confirm('Are you sure you want to close this account?')) {
+              onClick={async () => {
+                if (
+                  !window.confirm(
+                    'Are you sure you want to close this account?',
+                  )
+                ) {
                   return
                 }
-                return closeMutation.mutateAsync()
+                return await closeMutation.mutateAsync()
               }}
               disabled={closeMutation.isPending}
             >

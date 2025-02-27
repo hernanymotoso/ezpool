@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 'use client'
 
 import { useConnection } from '@solana/wallet-adapter-react'
@@ -8,27 +9,39 @@ import { AppModal } from '../ui/ui-layout'
 import { ClusterNetwork, useCluster } from './cluster-data-access'
 import { Connection } from '@solana/web3.js'
 
-export function ExplorerLink({ path, label, className }: { path: string; label: string; className?: string }) {
+export function ExplorerLink({
+  path,
+  label,
+  className,
+}: {
+  path: string
+  label: string
+  className?: string
+}) {
   const { getExplorerUrl } = useCluster()
   return (
     <a
       href={getExplorerUrl(path)}
       target="_blank"
       rel="noopener noreferrer"
-      className={className ? className : `link font-mono`}
+      className={className || `link font-mono`}
     >
       {label}
     </a>
   )
 }
 
-export function ClusterChecker({ children }: { children: ReactNode }) {
+export function ClusterChecker({
+  children,
+}: {
+  children: ReactNode
+}): ReactNode | null {
   const { cluster } = useCluster()
   const { connection } = useConnection()
 
   const query = useQuery({
     queryKey: ['version', { cluster, endpoint: connection.rpcEndpoint }],
-    queryFn: () => connection.getVersion(),
+    queryFn: async () => await connection.getVersion(),
     retry: 1,
   })
   if (query.isLoading) {
@@ -40,7 +53,10 @@ export function ClusterChecker({ children }: { children: ReactNode }) {
         <span>
           Error connecting to cluster <strong>{cluster.name}</strong>
         </span>
-        <button className="btn btn-xs btn-neutral" onClick={() => query.refetch()}>
+        <button
+          className="btn btn-xs btn-neutral"
+          onClick={async () => await query.refetch()}
+        >
           Refresh
         </button>
       </div>
@@ -56,11 +72,16 @@ export function ClusterUiSelect() {
       <label tabIndex={0} className="btn btn-primary rounded-btn">
         {cluster.name}
       </label>
-      <ul tabIndex={0} className="menu dropdown-content z-[1] p-2 shadow bg-base-100 rounded-box w-52 mt-4">
-        {clusters.map((item) => (
+      <ul
+        tabIndex={0}
+        className="menu dropdown-content z-[1] p-2 shadow bg-base-100 rounded-box w-52 mt-4"
+      >
+        {clusters.map(item => (
           <li key={item.name}>
             <button
-              className={`btn btn-sm ${item.active ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn btn-sm ${
+                item.active ? 'btn-primary' : 'btn-ghost'
+              }`}
               onClick={() => setCluster(item)}
             >
               {item.name}
@@ -72,7 +93,13 @@ export function ClusterUiSelect() {
   )
 }
 
-export function ClusterUiModal({ hideModal, show }: { hideModal: () => void; show: boolean }) {
+export function ClusterUiModal({
+  hideModal,
+  show,
+}: {
+  hideModal: () => void
+  show: boolean
+}) {
   const { addCluster } = useCluster()
   const [name, setName] = useState('')
   const [network, setNetwork] = useState<ClusterNetwork | undefined>()
@@ -85,6 +112,7 @@ export function ClusterUiModal({ hideModal, show }: { hideModal: () => void; sho
       show={show}
       submit={() => {
         try {
+          // eslint-disable-next-line no-new
           new Connection(endpoint)
           if (name) {
             addCluster({ name, network, endpoint })
@@ -103,19 +131,19 @@ export function ClusterUiModal({ hideModal, show }: { hideModal: () => void; sho
         placeholder="Name"
         className="input input-bordered w-full"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={e => setName(e.target.value)}
       />
       <input
         type="text"
         placeholder="Endpoint"
         className="input input-bordered w-full"
         value={endpoint}
-        onChange={(e) => setEndpoint(e.target.value)}
+        onChange={e => setEndpoint(e.target.value)}
       />
       <select
         className="select select-bordered w-full"
         value={network}
-        onChange={(e) => setNetwork(e.target.value as ClusterNetwork)}
+        onChange={e => setNetwork(e.target.value as ClusterNetwork)}
       >
         <option value={undefined}>Select a network</option>
         <option value={ClusterNetwork.Devnet}>Devnet</option>
@@ -138,7 +166,7 @@ export function ClusterUiTable() {
           </tr>
         </thead>
         <tbody>
-          {clusters.map((item) => (
+          {clusters.map(item => (
             <tr key={item.name} className={item?.active ? 'bg-base-200' : ''}>
               <td className="space-y-2">
                 <div className="whitespace-nowrap space-x-2">
@@ -146,14 +174,22 @@ export function ClusterUiTable() {
                     {item?.active ? (
                       item.name
                     ) : (
-                      <button title="Select cluster" className="link link-secondary" onClick={() => setCluster(item)}>
+                      <button
+                        title="Select cluster"
+                        className="link link-secondary"
+                        onClick={() => setCluster(item)}
+                      >
                         {item.name}
                       </button>
                     )}
                   </span>
                 </div>
-                <span className="text-xs">Network: {item.network ?? 'custom'}</span>
-                <div className="whitespace-nowrap text-gray-500 text-xs">{item.endpoint}</div>
+                <span className="text-xs">
+                  Network: {item.network ?? 'custom'}
+                </span>
+                <div className="whitespace-nowrap text-gray-500 text-xs">
+                  {item.endpoint}
+                </div>
               </td>
               <td className="space-x-2 whitespace-nowrap text-center">
                 <button

@@ -16,9 +16,13 @@ import { useCluster } from '../cluster/cluster-data-access'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
-export const WalletButton = dynamic(async () => (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton, {
-  ssr: false,
-})
+export const WalletButton = dynamic(
+  async () =>
+    (await import('@solana/wallet-adapter-react-ui')).WalletMultiButton,
+  {
+    ssr: false,
+  },
+)
 
 export function SolanaProvider({ children }: { children: ReactNode }) {
   const { cluster } = useCluster()
@@ -40,5 +44,7 @@ export function useAnchorProvider() {
   const { connection } = useConnection()
   const wallet = useWallet()
 
-  return new AnchorProvider(connection, wallet as AnchorWallet, { commitment: 'confirmed' })
+  return new AnchorProvider(connection, wallet as AnchorWallet, {
+    commitment: 'confirmed',
+  })
 }

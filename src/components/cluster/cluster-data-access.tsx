@@ -37,22 +37,28 @@ export const defaultClusters: Cluster[] = [
   },
 ]
 
-const clusterAtom = atomWithStorage<Cluster>('solana-cluster', defaultClusters[0])
-const clustersAtom = atomWithStorage<Cluster[]>('solana-clusters', defaultClusters)
+const clusterAtom = atomWithStorage<Cluster>(
+  'solana-cluster',
+  defaultClusters[0],
+)
+const clustersAtom = atomWithStorage<Cluster[]>(
+  'solana-clusters',
+  defaultClusters,
+)
 
-const activeClustersAtom = atom<Cluster[]>((get) => {
+const activeClustersAtom = atom<Cluster[]>(get => {
   const clusters = get(clustersAtom)
   const cluster = get(clusterAtom)
-  return clusters.map((item) => ({
+  return clusters.map(item => ({
     ...item,
     active: item.name === cluster.name,
   }))
 })
 
-const activeClusterAtom = atom<Cluster>((get) => {
+const activeClusterAtom = atom<Cluster>(get => {
   const clusters = get(activeClustersAtom)
 
-  return clusters.find((item) => item.active) || clusters[0]
+  return clusters.find(item => item.active) || clusters[0]
 })
 
 export interface ClusterProviderContext {
@@ -61,10 +67,12 @@ export interface ClusterProviderContext {
   addCluster: (cluster: Cluster) => void
   deleteCluster: (cluster: Cluster) => void
   setCluster: (cluster: Cluster) => void
-  getExplorerUrl(path: string): string
+  getExplorerUrl: (path: string) => string
 }
 
-const Context = createContext<ClusterProviderContext>({} as ClusterProviderContext)
+const Context = createContext<ClusterProviderContext>(
+  {} as ClusterProviderContext,
+)
 
 export function ClusterProvider({ children }: { children: ReactNode }) {
   const cluster = useAtomValue(activeClusterAtom)
@@ -77,6 +85,7 @@ export function ClusterProvider({ children }: { children: ReactNode }) {
     clusters: clusters.sort((a, b) => (a.name > b.name ? 1 : -1)),
     addCluster: (cluster: Cluster) => {
       try {
+        // eslint-disable-next-line no-new
         new Connection(cluster.endpoint)
         setClusters([...clusters, cluster])
       } catch (err) {
@@ -84,10 +93,11 @@ export function ClusterProvider({ children }: { children: ReactNode }) {
       }
     },
     deleteCluster: (cluster: Cluster) => {
-      setClusters(clusters.filter((item) => item.name !== cluster.name))
+      setClusters(clusters.filter(item => item.name !== cluster.name))
     },
     setCluster: (cluster: Cluster) => setCluster(cluster),
-    getExplorerUrl: (path: string) => `https://explorer.solana.com/${path}${getClusterUrlParam(cluster)}`,
+    getExplorerUrl: (path: string) =>
+      `https://explorer.solana.com/${path}${getClusterUrlParam(cluster)}`,
   }
   return <Context.Provider value={value}>{children}</Context.Provider>
 }

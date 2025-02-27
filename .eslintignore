@@ -1,0 +1,23 @@
+# Ignore public
+/public/*
+
+# Ignore assets
+/src/assets/*
+
+# Ignore built files except build/index.js
+build/*
+!build/index.js
+
+# Ignore image files
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.webp
+**/*.ico
+
+node_modules
+.env.local
+.next
+yarn.lock

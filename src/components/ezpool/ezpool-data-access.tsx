@@ -15,26 +15,36 @@ export function useEzpoolProgram() {
   const { cluster } = useCluster()
   const transactionToast = useTransactionToast()
   const provider = useAnchorProvider()
-  const programId = useMemo(() => getEzpoolProgramId(cluster.network as Cluster), [cluster])
-  const program = useMemo(() => getEzpoolProgram(provider, programId), [provider, programId])
+  const programId = useMemo(
+    () => getEzpoolProgramId(cluster.network as Cluster),
+    [cluster],
+  )
+  const program = useMemo(
+    () => getEzpoolProgram(provider, programId),
+    [provider, programId],
+  )
 
   const accounts = useQuery({
     queryKey: ['ezpool', 'all', { cluster }],
-    queryFn: () => program.account.ezpool.all(),
+    queryFn: async () => await program.account.ezpool.all(),
   })
 
   const getProgramAccount = useQuery({
     queryKey: ['get-program-account', { cluster }],
-    queryFn: () => connection.getParsedAccountInfo(programId),
+    queryFn: async () => await connection.getParsedAccountInfo(programId),
   })
 
   const initialize = useMutation({
     mutationKey: ['ezpool', 'initialize', { cluster }],
-    mutationFn: (keypair: Keypair) =>
-      program.methods.initialize().accounts({ ezpool: keypair.publicKey }).signers([keypair]).rpc(),
-    onSuccess: (signature) => {
+    mutationFn: async (keypair: Keypair) =>
+      await program.methods
+        .initialize()
+        .accounts({ ezpool: keypair.publicKey })
+        .signers([keypair])
+        .rpc(),
+    onSuccess: async signature => {
       transactionToast(signature)
-      return accounts.refetch()
+      return await accounts.refetch()
     },
     onError: () => toast.error('Failed to initialize account'),
   })
@@ -55,42 +65,46 @@ export function useEzpoolProgramAccount({ account }: { account: PublicKey }) {
 
   const accountQuery = useQuery({
     queryKey: ['ezpool', 'fetch', { cluster, account }],
-    queryFn: () => program.account.ezpool.fetch(account),
+    queryFn: async () => await program.account.ezpool.fetch(account),
   })
 
   const closeMutation = useMutation({
     mutationKey: ['ezpool', 'close', { cluster, account }],
-    mutationFn: () => program.methods.close().accounts({ ezpool: account }).rpc(),
-    onSuccess: (tx) => {
+    mutationFn: async () =>
+      await program.methods.close().accounts({ ezpool: account }).rpc(),
+    onSuccess: async tx => {
       transactionToast(tx)
-      return accounts.refetch()
+      return await accounts.refetch()
     },
   })
 
   const decrementMutation = useMutation({
     mutationKey: ['ezpool', 'decrement', { cluster, account }],
-    mutationFn: () => program.methods.decrement().accounts({ ezpool: account }).rpc(),
-    onSuccess: (tx) => {
+    mutationFn: async () =>
+      await program.methods.decrement().accounts({ ezpool: account }).rpc(),
+    onSuccess: async tx => {
       transactionToast(tx)
-      return accountQuery.refetch()
+      return await accountQuery.refetch()
     },
   })
 
   const incrementMutation = useMutation({
     mutationKey: ['ezpool', 'increment', { cluster, account }],
-    mutationFn: () => program.methods.increment().accounts({ ezpool: account }).rpc(),
-    onSuccess: (tx) => {
+    mutationFn: async () =>
+      await program.methods.increment().accounts({ ezpool: account }).rpc(),
+    onSuccess: async tx => {
       transactionToast(tx)
-      return accountQuery.refetch()
+      return await accountQuery.refetch()
     },
   })
 
   const setMutation = useMutation({
     mutationKey: ['ezpool', 'set', { cluster, account }],
-    mutationFn: (value: number) => program.methods.set(value).accounts({ ezpool: account }).rpc(),
-    onSuccess: (tx) => {
+    mutationFn: async (value: number) =>
+      await program.methods.set(value).accounts({ ezpool: account }).rpc(),
+    onSuccess: async tx => {
       transactionToast(tx)
-      return accountQuery.refetch()
+      return await accountQuery.refetch()
     },
   })
 
