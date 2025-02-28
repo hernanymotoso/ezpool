@@ -30,6 +30,7 @@ export function UiLayout({
           <Link className="btn btn-ghost normal-case text-xl" href="/">
             Ezpool
           </Link>
+
           <ul className="menu menu-horizontal px-1 space-x-2">
             {links.map(({ label, path }) => (
               <li key={path}>
