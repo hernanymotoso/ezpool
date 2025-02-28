@@ -1,10 +1,10 @@
 import { ClusterProvider } from '@/components/cluster/cluster-data-access'
 import { SolanaProvider } from '@/components/solana/solana-provider'
 import { UiLayout } from '@/components/ui/ui-layout'
-import { StyledComponents } from '@/utils/styled-components'
 import * as React from 'react'
 import './globals.css'
 import { ReactQueryProvider } from './react-query-provider'
+import { StyledComponents } from '@/lib/registry'
 
 export const metadata = {
   title: 'Ezpool',

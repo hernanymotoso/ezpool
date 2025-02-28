@@ -36,7 +36,8 @@
     "@typescript-eslint/consistent-type-assertions": "off",
     "promise/param-names": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
-    "@typescript-eslint/no-confusing-void-expression": "off"
+    "@typescript-eslint/no-confusing-void-expression": "off",
+    "@typescript-eslint/no-non-null-assertion": "off"
   },
   "globals": {
     "google": "readonly"

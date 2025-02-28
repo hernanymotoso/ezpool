@@ -1,5 +1,5 @@
-import EzpoolFeature from '@/components/ezpool/ezpool-feature'
+import WhirlpoolFeature from '@/components/whirlpool/whirlpool-feature'
 
 export default function Page() {
-  return <EzpoolFeature />
+  return <WhirlpoolFeature />
 }
