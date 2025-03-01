@@ -5,12 +5,14 @@ import { ExplorerLink } from '../cluster/cluster-ui'
 import { WalletButton } from '../solana/solana-provider'
 import { AppHero, ellipsify } from '../ui/ui-layout'
 import { WhirlpoolData } from './whirlpool'
-import { useWhirlpoolProgram } from './whirlpool-data-access'
+import * as whirlpoolProgram from '@/hooks/whirlpool'
 
 export default function WhirlpoolFeature() {
   const { publicKey } = useWallet()
-  const { programId } = useWhirlpoolProgram()
+  const { programId } = whirlpoolProgram.useProgram()
+  const { data } = whirlpoolProgram.useAccounts('whirlpool')
 
+  console.log('whirlpools', data)
   return publicKey ? (
     <div>
       <AppHero
