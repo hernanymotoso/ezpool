@@ -21,5 +21,6 @@ export function useProgram() {
   return {
     program,
     programId,
+    cluster,
   }
 }

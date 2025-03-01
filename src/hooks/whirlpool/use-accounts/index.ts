@@ -1,35 +1,16 @@
-import { useCluster } from '@/components/cluster/cluster-data-access'
-import { AccountType } from './types'
-import { useAnchorProvider } from '@/components/solana/solana-provider'
-import { useMemo } from 'react'
-import { getWhirlpoolProgram, getWhirlpoolProgramId } from '@project/anchor'
-import { Cluster } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
+import { useProgram } from '../use-program'
+import { AccountType } from './types'
+import { InvalidParamError } from '@/utils/errors'
 
 export function useAccounts(type: AccountType) {
-  const { cluster } = useCluster()
-  const provider = useAnchorProvider()
-
-  const programId = useMemo(
-    () => getWhirlpoolProgramId(cluster.network as Cluster),
-    [cluster],
-  )
-
-  const program = useMemo(
-    () => getWhirlpoolProgram(provider, programId),
-    [provider, programId],
-  )
-
+  const { program, cluster } = useProgram()
   const isValidType = type && program.account?.[type]
 
   return useQuery({
     queryKey: ['ezpool', 'accounts', type, { cluster }],
     queryFn: async () => {
-      if (!isValidType) {
-        throw new Error(
-          `Invalid account type "${type}". Ensure it exists in the program.`,
-        )
-      }
+      if (!isValidType) return new InvalidParamError('type')
       return await program.account[type].all()
     },
     enabled: Boolean(type),
