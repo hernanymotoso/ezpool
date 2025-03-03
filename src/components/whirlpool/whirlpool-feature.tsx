@@ -10,9 +10,7 @@ import * as whirlpoolProgram from '@/hooks/whirlpool'
 export default function WhirlpoolFeature() {
   const { publicKey } = useWallet()
   const { programId } = whirlpoolProgram.useProgram()
-  const { data } = whirlpoolProgram.useAccounts('whirlpool')
 
-  console.log('whirlpools', data)
   return publicKey ? (
     <div>
       <AppHero
