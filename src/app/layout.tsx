@@ -1,10 +1,10 @@
 import { ClusterProvider } from '@/components/cluster/cluster-data-access'
 import { SolanaProvider } from '@/components/solana/solana-provider'
 import { UiLayout } from '@/components/ui/ui-layout'
+import { StyledComponents } from '@/lib/registry'
+import { TRPCReactProvider } from '@/trpc/react'
 import * as React from 'react'
 import './globals.css'
-import { ReactQueryProvider } from './react-query-provider'
-import { StyledComponents } from '@/lib/registry'
 
 export const metadata = {
   title: 'Ezpool',
@@ -26,13 +26,13 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <StyledComponents>
-          <ReactQueryProvider>
+          <TRPCReactProvider>
             <ClusterProvider>
               <SolanaProvider>
                 <UiLayout links={links}>{children}</UiLayout>
               </SolanaProvider>
             </ClusterProvider>
-          </ReactQueryProvider>
+          </TRPCReactProvider>
         </StyledComponents>
       </body>
     </html>
