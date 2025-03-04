@@ -29,7 +29,6 @@ export const createFeeTier = publicProcedure
       ],
       ctx.solana.program.programId,
     )
-    console.log('feeTierPda')
 
     return await ctx.solana.program.methods
       .initializeFeeTier(input.tickSpacing, input.defaultFeeRate)
