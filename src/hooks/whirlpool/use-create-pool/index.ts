@@ -1,4 +1,6 @@
 import { ResourceNotFoundError } from '@/utils/errors'
+import { PriceMath } from '@/utils/math/price-math'
+import { getMint } from '@solana/spl-token'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
   Keypair,
@@ -7,22 +9,16 @@ import {
   SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js'
 import { useMutation } from '@tanstack/react-query'
+import Decimal from 'decimal.js'
 import { useFeeTier } from '../use-fee-tier'
 import { useProgram } from '../use-program'
+import { getFunderKeypair } from './helpers'
 import { CreatePoolDTO, RequestThis } from './types'
-import { getMint } from '@solana/spl-token'
-import { PriceMath } from '@/utils/math/price-math'
-import Decimal from 'decimal.js'
-import { env } from '@/env'
 
 const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
 
 async function request(this: RequestThis, dto: CreatePoolDTO) {
-  console.log('WHIRLPOOL_CONFIG:', WHIRLPOOL_CONFIG)
-
-  const funderKeypair = Keypair.fromSecretKey(
-    new Uint8Array(JSON.parse(env.server.PUBLIC_FUNDER_WALLET!)),
-  )
+  const funderKeypair = getFunderKeypair()
 
   const feeTier = await this.getFeeTier({ tickSpacing: dto.tickSpacing })
   if (!feeTier?.feeTierAccount) throw new ResourceNotFoundError('FeeTier')
