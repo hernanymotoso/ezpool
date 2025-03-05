@@ -18,12 +18,10 @@ import {
   getTokenInfo,
 } from './helpers'
 import { CreatePoolDTO, RequestThis } from './types'
-
-const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
+import { env } from '@/env'
 
 async function request(this: RequestThis, dto: CreatePoolDTO) {
   const funderKeypair = getFunderKeypair()
-
   const feeTier = await this.getFeeTier({ tickSpacing: dto.tickSpacing })
   if (!feeTier?.feeTierAccount) throw new ResourceNotFoundError('FeeTier')
 
@@ -67,7 +65,7 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
     tokenProgramB: tokenInfoB.tokenProgram,
     feeTier: feeTier.feeTierPDA,
     whirlpool: poolPDA,
-    whirlpoolsConfig: WHIRLPOOL_CONFIG,
+    whirlpoolsConfig: env.frontend.WHIRLPOOL_CONFIG,
     funder: funderKeypair.publicKey,
     rent: SYSVAR_RENT_PUBKEY,
     systemProgram: SystemProgram.programId,

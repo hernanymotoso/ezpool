@@ -4,11 +4,9 @@ import { getMint } from '@solana/spl-token'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { BuildPoolPDADTO, GetTokenInfoDTO } from './types'
 
-const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
-
 export function getFunderKeypair(): Keypair {
   return Keypair.fromSecretKey(
-    new Uint8Array(JSON.parse(env.server.PUBLIC_FUNDER_WALLET!)),
+    new Uint8Array(JSON.parse(env.frontend.FUNDER_WALLET)),
   )
 }
 
@@ -31,7 +29,7 @@ export function buildPoolPDA({
   const [poolPDA] = PublicKey.findProgramAddressSync(
     [
       Buffer.from('whirlpool'),
-      new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
+      new PublicKey(env.frontend.WHIRLPOOL_CONFIG).toBuffer(),
       new PublicKey(tokenMintA).toBuffer(),
       new PublicKey(tokenMintB).toBuffer(),
       tickSpacingBuffer,
@@ -46,7 +44,7 @@ export function buildTokenBadgePDA(tokenMint: string, programId: PublicKey) {
   const [tokenBadgePDA] = PublicKey.findProgramAddressSync(
     [
       Buffer.from('token_badge'),
-      new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
+      new PublicKey(env.frontend.WHIRLPOOL_CONFIG).toBuffer(),
       new PublicKey(tokenMint).toBuffer(),
     ],
     programId,
