@@ -16,3 +16,10 @@ export type CreatePoolDTO = {
   tickSpacing: number
   initialPrice?: number
 }
+
+export type BuildPoolPDADTO = {
+  tokenMintA: string
+  tokenMintB: string
+  tickSpacing: number
+  programId: PublicKey
+}
