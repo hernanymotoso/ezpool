@@ -1,6 +1,8 @@
 import { env } from '@/env'
+import { ResourceNotFoundError } from '@/utils/errors'
+import { getMint } from '@solana/spl-token'
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { BuildPoolPDADTO } from './types'
+import { BuildPoolPDADTO, GetTokenInfoDTO } from './types'
 
 const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
 
@@ -51,4 +53,19 @@ export function buildTokenBadgePDA(tokenMint: string, programId: PublicKey) {
   )
 
   return tokenBadgePDA
+}
+
+export async function getTokenInfo({ connection, tokenMint }: GetTokenInfoDTO) {
+  const [tokenInfo, mintInfo] = await Promise.all([
+    connection.getAccountInfo(new PublicKey(tokenMint)),
+    getMint(connection, new PublicKey(tokenMint)),
+  ])
+  if (!tokenInfo?.owner || !mintInfo.address) {
+    throw new ResourceNotFoundError('Token Info')
+  }
+
+  return {
+    tokenProgram: tokenInfo.owner.toBase58(),
+    decimals: mintInfo.decimals,
+  }
 }

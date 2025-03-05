@@ -23,3 +23,8 @@ export type BuildPoolPDADTO = {
   tickSpacing: number
   programId: PublicKey
 }
+
+export type GetTokenInfoDTO = {
+  connection: Connection
+  tokenMint: string
+}

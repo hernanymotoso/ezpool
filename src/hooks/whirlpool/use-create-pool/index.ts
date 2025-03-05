@@ -1,6 +1,5 @@
 import { ResourceNotFoundError } from '@/utils/errors'
 import { PriceMath } from '@/utils/math/price-math'
-import { getMint } from '@solana/spl-token'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import {
   Keypair,
@@ -12,7 +11,12 @@ import { useMutation } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { useFeeTier } from '../use-fee-tier'
 import { useProgram } from '../use-program'
-import { buildPoolPDA, buildTokenBadgePDA, getFunderKeypair } from './helpers'
+import {
+  buildPoolPDA,
+  buildTokenBadgePDA,
+  getFunderKeypair,
+  getTokenInfo,
+} from './helpers'
 import { CreatePoolDTO, RequestThis } from './types'
 
 const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
@@ -34,55 +38,44 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
   const tokenVaultAKeypair = Keypair.generate()
   const tokenVaultBKeypair = Keypair.generate()
 
-  // token badge PDAs
   const tokenBadgeA = buildTokenBadgePDA(dto.tokenMintA, this.program.programId)
   const tokenBadgeB = buildTokenBadgePDA(dto.tokenMintB, this.program.programId)
 
-  const tokenInfoA = await this.connection.getAccountInfo(
-    new PublicKey(dto.tokenMintA),
-  )
-
-  // tx ernV2GcQCX2anoL7YRc2hExMnWqUzGZ6NEgVXChT1zN2SXi24rYa4wdaXACS9JcAH1zuCYNZnuNCsWX2GT1oYJi
-
-  if (!tokenInfoA?.owner) throw new ResourceNotFoundError('TokenProgramA')
-  const mintInfoA = await getMint(
-    this.connection,
-    new PublicKey(dto.tokenMintA),
-  )
-
-  const tokenInfoB = await this.connection.getAccountInfo(
-    new PublicKey(dto.tokenMintB),
-  )
-  if (!tokenInfoB?.owner) throw new ResourceNotFoundError('TokenProgramB')
-  const mintInfoB = await getMint(
-    this.connection,
-    new PublicKey(dto.tokenMintB),
-  )
+  const tokenInfoA = await getTokenInfo({
+    connection: this.connection,
+    tokenMint: dto.tokenMintA,
+  })
+  const tokenInfoB = await getTokenInfo({
+    connection: this.connection,
+    tokenMint: dto.tokenMintA,
+  })
 
   const initialSqrtPrice = PriceMath.priceToSqrtPriceX64(
     new Decimal(dto?.initialPrice || 1),
-    mintInfoA.decimals,
-    mintInfoB.decimals,
+    tokenInfoA.decimals,
+    tokenInfoB.decimals,
   )
+
+  const context = {
+    tokenMintA: new PublicKey(dto.tokenMintA),
+    tokenMintB: new PublicKey(dto.tokenMintB),
+    tokenVaultA: tokenVaultAKeypair.publicKey,
+    tokenVaultB: tokenVaultBKeypair.publicKey,
+    tokenBadgeA,
+    tokenBadgeB,
+    tokenProgramA: tokenInfoA.tokenProgram,
+    tokenProgramB: tokenInfoB.tokenProgram,
+    feeTier: feeTier.feeTierPDA,
+    whirlpool: poolPDA,
+    whirlpoolsConfig: WHIRLPOOL_CONFIG,
+    funder: funderKeypair.publicKey,
+    rent: SYSVAR_RENT_PUBKEY,
+    systemProgram: SystemProgram.programId,
+  }
 
   const txSignature = await this.program.methods
     .initializePoolV2(dto.tickSpacing, initialSqrtPrice)
-    .accounts({
-      tokenMintA: new PublicKey(dto.tokenMintA),
-      tokenMintB: new PublicKey(dto.tokenMintB),
-      tokenVaultA: tokenVaultAKeypair.publicKey,
-      tokenVaultB: tokenVaultBKeypair.publicKey,
-      tokenBadgeA,
-      tokenBadgeB,
-      tokenProgramA: tokenInfoA.owner.toBase58(),
-      tokenProgramB: tokenInfoB.owner.toBase58(),
-      feeTier: feeTier.feeTierPDA,
-      whirlpool: poolPDA,
-      whirlpoolsConfig: WHIRLPOOL_CONFIG,
-      funder: funderKeypair.publicKey,
-      rent: SYSVAR_RENT_PUBKEY,
-      systemProgram: SystemProgram.programId,
-    })
+    .accounts(context)
     .signers([funderKeypair, tokenVaultAKeypair, tokenVaultBKeypair])
     .rpc()
 
