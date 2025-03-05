@@ -12,7 +12,7 @@ import { useMutation } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { useFeeTier } from '../use-fee-tier'
 import { useProgram } from '../use-program'
-import { getFunderKeypair } from './helpers'
+import { buildTickSpacingBuffer, getFunderKeypair } from './helpers'
 import { CreatePoolDTO, RequestThis } from './types'
 
 const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
@@ -23,8 +23,7 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
   const feeTier = await this.getFeeTier({ tickSpacing: dto.tickSpacing })
   if (!feeTier?.feeTierAccount) throw new ResourceNotFoundError('FeeTier')
 
-  const tickSpacingBuffer = Buffer.alloc(2)
-  tickSpacingBuffer.writeUInt16LE(feeTier.feeTierAccount.tickSpacing, 0)
+  const tickSpacing = buildTickSpacingBuffer(feeTier.feeTierAccount.tickSpacing)
 
   const [poolPDA] = PublicKey.findProgramAddressSync(
     [
@@ -32,7 +31,7 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
       new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
       new PublicKey(dto.tokenMintA).toBuffer(),
       new PublicKey(dto.tokenMintB).toBuffer(),
-      tickSpacingBuffer,
+      tickSpacing,
     ],
     this.program.programId,
   )
