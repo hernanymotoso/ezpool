@@ -7,7 +7,6 @@ export type RequestThis = {
   program: Program<Whirlpool>
   getFeeTier: (dto: FeeTierDTO) => Promise<FeeTierResponse>
   connection: Connection
-  userWalletPublicKey: PublicKey
 }
 
 export type CreatePoolDTO = {

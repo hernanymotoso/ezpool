@@ -1,6 +1,6 @@
 import { ResourceNotFoundError } from '@/utils/errors'
 import { PriceMath } from '@/utils/math/price-math'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import { useConnection } from '@solana/wallet-adapter-react'
 import {
   Keypair,
   PublicKey,
@@ -85,19 +85,16 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
 export function useCreatePool() {
   const { cluster, program } = useProgram()
   const { connection } = useConnection()
-  const { publicKey: userWalletPublicKey } = useWallet()
-
-  if (!connection || !userWalletPublicKey)
-    throw new Error('Connect your wallet')
-
   const { mutateAsync: getFeeTier } = useFeeTier()
+
+  if (!connection) throw new Error('Connect your wallet')
+
   return useMutation({
     mutationKey: ['whirlpool', 'create-pool', { cluster }],
     mutationFn: request.bind({
       program,
-      getFeeTier,
       connection,
-      userWalletPublicKey,
+      getFeeTier,
     }),
     onSuccess(data) {
       console.log('Create pool data:', data)
