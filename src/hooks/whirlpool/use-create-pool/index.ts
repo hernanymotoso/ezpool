@@ -12,7 +12,7 @@ import { useMutation } from '@tanstack/react-query'
 import Decimal from 'decimal.js'
 import { useFeeTier } from '../use-fee-tier'
 import { useProgram } from '../use-program'
-import { buildPoolPDA, getFunderKeypair } from './helpers'
+import { buildPoolPDA, buildTokenBadgePDA, getFunderKeypair } from './helpers'
 import { CreatePoolDTO, RequestThis } from './types'
 
 const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
@@ -30,49 +30,13 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
     programId: this.program.programId,
   })
 
-  // token vault PDAs
-  // const [tokenVaultAPDA] = PublicKey.findProgramAddressSync(
-  //   [
-  //     Buffer.from('token_vault'),
-  //     poolPDA.toBuffer(),
-  //     new PublicKey(dto.tokenMintA).toBuffer(),
-  //   ],
-  //   this.program.programId,
-  // )
-
-  console.log('poolPDA', poolPDA.toString())
-  console.log('funder pk', funderKeypair.publicKey.toString())
-
-  // const [tokenVaultBPDA] = PublicKey.findProgramAddressSync(
-  //   [
-  //     Buffer.from('token_vault'),
-  //     poolPDA.toBuffer(),
-  //     new PublicKey(dto.tokenMintB).toBuffer(),
-  //   ],
-  //   this.program.programId,
-  // )
-
+  // TODO: How's work the token vaults
   const tokenVaultAKeypair = Keypair.generate()
   const tokenVaultBKeypair = Keypair.generate()
 
   // token badge PDAs
-  const [tokenBadgeAPDA] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('token_badge'),
-      new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
-      new PublicKey(dto.tokenMintA).toBuffer(),
-    ],
-    this.program.programId,
-  )
-
-  const [tokenBadgeBPDA] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('token_badge'),
-      new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
-      new PublicKey(dto.tokenMintB).toBuffer(),
-    ],
-    this.program.programId,
-  )
+  const tokenBadgeA = buildTokenBadgePDA(dto.tokenMintA, this.program.programId)
+  const tokenBadgeB = buildTokenBadgePDA(dto.tokenMintB, this.program.programId)
 
   const tokenInfoA = await this.connection.getAccountInfo(
     new PublicKey(dto.tokenMintA),
@@ -108,8 +72,8 @@ async function request(this: RequestThis, dto: CreatePoolDTO) {
       tokenMintB: new PublicKey(dto.tokenMintB),
       tokenVaultA: tokenVaultAKeypair.publicKey,
       tokenVaultB: tokenVaultBKeypair.publicKey,
-      tokenBadgeA: tokenBadgeAPDA,
-      tokenBadgeB: tokenBadgeBPDA,
+      tokenBadgeA,
+      tokenBadgeB,
       tokenProgramA: tokenInfoA.owner.toBase58(),
       tokenProgramB: tokenInfoB.owner.toBase58(),
       feeTier: feeTier.feeTierPDA,

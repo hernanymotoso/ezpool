@@ -39,3 +39,16 @@ export function buildPoolPDA({
 
   return poolPDA
 }
+
+export function buildTokenBadgePDA(tokenMint: string, programId: PublicKey) {
+  const [tokenBadgePDA] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from('token_badge'),
+      new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
+      new PublicKey(tokenMint).toBuffer(),
+    ],
+    programId,
+  )
+
+  return tokenBadgePDA
+}
