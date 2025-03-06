@@ -9,6 +9,7 @@ import {
   RequestThis,
 } from './types'
 
+// FIXME: remove wallets from frontend and do the serialisation way
 const funderKeyPairBytes = new Uint8Array(funder)
 const configKeyPairBytes = new Uint8Array(config)
 
