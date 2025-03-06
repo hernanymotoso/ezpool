@@ -2,8 +2,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useMutation } from '@tanstack/react-query'
 import { useProgram } from '../use-program'
 import { FeeTierDTO, FeeTierResponse, RequestThis } from './types'
-
-const WHIRLPOOL_CONFIG = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
+import { env } from '@/env'
 
 async function request(
   this: RequestThis,
@@ -14,7 +13,7 @@ async function request(
   const [feeTierPDA] = PublicKey.findProgramAddressSync(
     [
       Buffer.from('fee_tier'),
-      new PublicKey(WHIRLPOOL_CONFIG).toBuffer(),
+      new PublicKey(env.frontend.WHIRLPOOL_CONFIG_PUBLIC_KEY).toBuffer(),
       tickSpacingBuffer,
     ],
     this.program.programId,
