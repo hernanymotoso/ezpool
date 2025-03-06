@@ -4,31 +4,31 @@ import { Whirlpool, WHIRLPOOL_PROGRAM_ID, WhirlpoolIDL } from '@project/anchor'
 import { Connection, Keypair } from '@solana/web3.js'
 
 const SOLANA_RPC_URL = env.server.SOLANA_RPC_URL!
-const FUNDER_WALLET = env.server.FUNDER_WALLET!
+const FUNDER_WALLET_SECRET_KEY = env.server.FUNDER_WALLET_SECRET_KEY!
 
 const createSolanaClient = () => {
   const connection = new Connection(SOLANA_RPC_URL, 'confirmed')
-  const adminWalletKeypair = Keypair.fromSecretKey(
-    new Uint8Array(JSON.parse(FUNDER_WALLET)),
+  const funderKeypair = Keypair.fromSecretKey(
+    new Uint8Array(JSON.parse(FUNDER_WALLET_SECRET_KEY)),
   )
   const provider = new AnchorProvider(
     connection,
     {
-      publicKey: adminWalletKeypair.publicKey,
+      publicKey: funderKeypair.publicKey,
       signTransaction: async tx => {
         if ('partialSign' in tx) {
-          tx.partialSign(adminWalletKeypair)
+          tx.partialSign(funderKeypair)
         } else {
-          tx.sign([adminWalletKeypair])
+          tx.sign([funderKeypair])
         }
         return tx
       },
       signAllTransactions: async txs => {
         return txs.map(tx => {
           if ('partialSign' in tx) {
-            tx.partialSign(adminWalletKeypair)
+            tx.partialSign(funderKeypair)
           } else {
-            tx.sign([adminWalletKeypair])
+            tx.sign([funderKeypair])
           }
           return tx
         })
