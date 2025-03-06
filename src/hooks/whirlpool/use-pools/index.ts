@@ -1,3 +1,4 @@
+import { env } from '@/env'
 import { api } from '@/trpc/react'
 
 type PoolsParams = {
@@ -6,9 +7,8 @@ type PoolsParams = {
 }
 
 export function usePools(params?: PoolsParams) {
-  const whirlpoolConfigAddress = process.env.NEXT_PUBLIC_CONFIG_ADDRESS!
   return api.solana.pool.read.useQuery({
-    publicKey: whirlpoolConfigAddress,
+    publicKey: env.frontend.WHIRLPOOL_CONFIG_PUBLIC_KEY,
     perPage: params?.perPage,
     page: params?.page,
   })
