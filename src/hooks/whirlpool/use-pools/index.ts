@@ -1,5 +1,5 @@
-import { env } from '@/env'
 import { api } from '@/trpc/react'
+import { useWallet } from '@solana/wallet-adapter-react'
 
 type PoolsParams = {
   perPage?: number
@@ -7,8 +7,11 @@ type PoolsParams = {
 }
 
 export function usePools(params?: PoolsParams) {
+  const { publicKey } = useWallet()
+  if (!publicKey) throw new Error('Connect your wallet!')
+
   return api.solana.pool.read.useQuery({
-    publicKey: env.frontend.WHIRLPOOL_CONFIG_PUBLIC_KEY,
+    account: publicKey.toString(),
     perPage: params?.perPage,
     page: params?.page,
   })
