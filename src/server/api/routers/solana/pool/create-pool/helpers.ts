@@ -1,16 +1,9 @@
 import { env } from '@/env'
+import { buildTickSpacingBuffer } from '@/server/api/helpers'
 import { ResourceNotFoundError } from '@/utils/errors'
 import { getMint } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { BuildPoolPDADTO, GetTokenInfoDTO } from './types'
-
-export function buildTickSpacingBuffer(
-  tickSpacing: number,
-): Buffer<ArrayBuffer> {
-  const tickSpacingBuffer = Buffer.alloc(2)
-  tickSpacingBuffer.writeUInt16LE(tickSpacing, 0)
-  return tickSpacingBuffer
-}
 
 export function buildFeeTierPDA(tickSpacing: number, programId: PublicKey) {
   const tickSpacingBuffer = buildTickSpacingBuffer(tickSpacing)
