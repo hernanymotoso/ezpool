@@ -1,23 +1,9 @@
 import { env } from '@/env'
-import { buildTickSpacingBuffer } from '@/server/api/helpers'
+import { buildTickSpacingBuffer } from '@/server/api/routers/solana/helpers'
 import { ResourceNotFoundError } from '@/utils/errors'
 import { getMint } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { BuildPoolPDADTO, GetTokenInfoDTO } from './types'
-
-export function buildFeeTierPDA(tickSpacing: number, programId: PublicKey) {
-  const tickSpacingBuffer = buildTickSpacingBuffer(tickSpacing)
-  const [feeTierPDA] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('fee_tier'),
-      new PublicKey(env.server.CONFIG_WALLET_PUBLIC_KEY).toBuffer(),
-      tickSpacingBuffer,
-    ],
-    programId,
-  )
-
-  return feeTierPDA
-}
 
 export function buildPoolPDA({
   tokenMintA,

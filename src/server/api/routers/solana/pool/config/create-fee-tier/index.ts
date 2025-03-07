@@ -1,10 +1,12 @@
 import { env } from '@/env'
-import { getKeypairFromSecretKey } from '@/server/api/helpers'
+import {
+  buildFeeTierPDA,
+  getKeypairFromSecretKey,
+} from '@/server/api/routers/solana/helpers'
 import { publicProcedure } from '@/server/api/trpc'
 import { RequiredFieldError } from '@/utils/errors/required-field-error'
 import { SystemProgram } from '@solana/web3.js'
 import { z } from 'zod'
-import { buildFeeTierPDA } from './helpers'
 
 export const createFeeTier = publicProcedure
   .input(

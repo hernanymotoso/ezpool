@@ -12,13 +12,11 @@ import {
 } from '@solana/web3.js'
 import Decimal from 'decimal.js'
 import { z } from 'zod'
+import { buildPoolPDA, buildTokenBadgePDA, getTokenInfo } from './helpers'
 import {
   buildFeeTierPDA,
-  buildPoolPDA,
-  buildTokenBadgePDA,
-  getTokenInfo,
-} from './helpers'
-import { getKeypairFromSecretKey } from '@/server/api/helpers'
+  getKeypairFromSecretKey,
+} from '@/server/api/routers/solana/helpers'
 
 export const createPool = publicProcedure
   .input(
