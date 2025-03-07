@@ -23,6 +23,7 @@ async function request(this: RequestThis, dto: Omit<CreatePoolDTO, 'account'>) {
   const tx = await this.connection.sendRawTransaction(signature.serialize())
 
   console.log('Yo', tx)
+  return tx
 }
 
 export function useCreatePool() {

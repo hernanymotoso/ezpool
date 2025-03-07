@@ -1,57 +1,45 @@
 import { env } from '@/env'
-import { AnchorProvider, Program } from '@coral-xyz/anchor'
-import { Whirlpool, WHIRLPOOL_PROGRAM_ID, WhirlpoolIDL } from '@project/anchor'
-import { Connection, Keypair } from '@solana/web3.js'
+import { AnchorProvider } from '@coral-xyz/anchor'
+import { getWhirlpoolProgram } from '@project/anchor'
+import { AnchorWallet } from '@solana/wallet-adapter-react'
+import { clusterApiUrl, Connection } from '@solana/web3.js'
 
-const SOLANA_RPC_URL = env.server.SOLANA_RPC_URL!
-const FUNDER_WALLET_SECRET_KEY = env.server.FUNDER_WALLET_SECRET_KEY!
+const createSolanaClient = (walletPublicKey: string) => {
+  if (!walletPublicKey) throw new Error('Connect your wallet!')
 
-const createSolanaClient = () => {
-  const connection = new Connection(SOLANA_RPC_URL, 'confirmed')
-  const funderKeypair = Keypair.fromSecretKey(
-    new Uint8Array(JSON.parse(FUNDER_WALLET_SECRET_KEY)),
+  const connection = new Connection(
+    clusterApiUrl(env.server.RPC_API_URL as any),
   )
+
+  // TODO: implement sign transactions
+  const dummyWallet = {
+    publicKey: walletPublicKey,
+    signTransaction: () => {
+      throw new Error('Not implemented')
+    },
+    signAllTransactions: () => {
+      throw new Error('Not implemented')
+    },
+  }
+
   const provider = new AnchorProvider(
     connection,
-    {
-      publicKey: funderKeypair.publicKey,
-      signTransaction: async tx => {
-        if ('partialSign' in tx) {
-          tx.partialSign(funderKeypair)
-        } else {
-          tx.sign([funderKeypair])
-        }
-        return tx
-      },
-      signAllTransactions: async txs => {
-        return txs.map(tx => {
-          if ('partialSign' in tx) {
-            tx.partialSign(funderKeypair)
-          } else {
-            tx.sign([funderKeypair])
-          }
-          return tx
-        })
-      },
-    },
+    dummyWallet as unknown as AnchorWallet,
     {
       commitment: 'confirmed',
+      skipPreflight: true,
     },
   )
 
-  const program = new Program(
-    WhirlpoolIDL as Whirlpool,
-    WHIRLPOOL_PROGRAM_ID,
-    provider,
-  )
+  const program = getWhirlpoolProgram(provider)
 
   return { connection, provider, program }
 }
 
 const globalForSolana = globalThis as unknown as {
-  solanaClient: ReturnType<typeof createSolanaClient> | undefined
+  solanaClient: typeof createSolanaClient | undefined
 }
 
-export const solana = globalForSolana.solanaClient ?? createSolanaClient()
+export const solana = globalForSolana.solanaClient ?? createSolanaClient
 
 if (env.server.NODE_ENV !== 'production') globalForSolana.solanaClient = solana

@@ -1,7 +1,7 @@
 export const env = {
   server: {
     NODE_ENV: process.env.NODE_ENV,
-    SOLANA_RPC_URL: process.env.SOLANA_RPC_URL!,
+    RPC_API_URL: process.env.RPC_API_URL!,
     FUNDER_WALLET_SECRET_KEY: process.env.FUNDER_WALLET!,
     CONFIG_WALLET_PUBLIC_KEY: process.env.CONFIG_WALLET_PUBLIC_KEY!,
   },
