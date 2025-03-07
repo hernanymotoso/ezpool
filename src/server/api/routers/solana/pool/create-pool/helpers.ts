@@ -1,14 +1,8 @@
 import { env } from '@/env'
 import { ResourceNotFoundError } from '@/utils/errors'
 import { getMint } from '@solana/spl-token'
-import { Keypair, PublicKey } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { BuildPoolPDADTO, GetTokenInfoDTO } from './types'
-
-export function getFunderKeypair(): Keypair {
-  return Keypair.fromSecretKey(
-    new Uint8Array(JSON.parse(env.frontend.FUNDER_WALLET)),
-  )
-}
 
 export function buildTickSpacingBuffer(
   tickSpacing: number,
@@ -16,6 +10,20 @@ export function buildTickSpacingBuffer(
   const tickSpacingBuffer = Buffer.alloc(2)
   tickSpacingBuffer.writeUInt16LE(tickSpacing, 0)
   return tickSpacingBuffer
+}
+
+export function buildFeeTierPDA(tickSpacing: number, programId: PublicKey) {
+  const tickSpacingBuffer = buildTickSpacingBuffer(tickSpacing)
+  const [feeTierPDA] = PublicKey.findProgramAddressSync(
+    [
+      Buffer.from('fee_tier'),
+      new PublicKey(env.server.CONFIG_WALLET_PUBLIC_KEY).toBuffer(),
+      tickSpacingBuffer,
+    ],
+    programId,
+  )
+
+  return feeTierPDA
 }
 
 export function buildPoolPDA({
@@ -29,7 +37,7 @@ export function buildPoolPDA({
   const [poolPDA] = PublicKey.findProgramAddressSync(
     [
       Buffer.from('whirlpool'),
-      new PublicKey(env.frontend.WHIRLPOOL_CONFIG).toBuffer(),
+      new PublicKey(env.server.CONFIG_WALLET_PUBLIC_KEY).toBuffer(),
       new PublicKey(tokenMintA).toBuffer(),
       new PublicKey(tokenMintB).toBuffer(),
       tickSpacingBuffer,
@@ -44,7 +52,7 @@ export function buildTokenBadgePDA(tokenMint: string, programId: PublicKey) {
   const [tokenBadgePDA] = PublicKey.findProgramAddressSync(
     [
       Buffer.from('token_badge'),
-      new PublicKey(env.frontend.WHIRLPOOL_CONFIG).toBuffer(),
+      new PublicKey(env.server.CONFIG_WALLET_PUBLIC_KEY).toBuffer(),
       new PublicKey(tokenMint).toBuffer(),
     ],
     programId,

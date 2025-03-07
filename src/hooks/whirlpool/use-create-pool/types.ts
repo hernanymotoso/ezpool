@@ -1,12 +1,19 @@
-import { Program } from '@coral-xyz/anchor'
-import { Whirlpool } from '@project/anchor'
-import { Connection, PublicKey } from '@solana/web3.js'
-import { FeeTierDTO, FeeTierResponse } from '../use-fee-tier/types'
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  VersionedTransaction,
+} from '@solana/web3.js'
 
 export type RequestThis = {
-  program: Program<Whirlpool>
-  getFeeTier: (dto: FeeTierDTO) => Promise<FeeTierResponse>
+  userWallerPublicKey: PublicKey
   connection: Connection
+  signTransaction:
+    | (<T extends Transaction | VersionedTransaction>(
+        transaction: T,
+      ) => Promise<T>)
+    | undefined
+  createPool: (dto: CreatePoolDTO) => Promise<{ serializedTransaction: string }>
 }
 
 export type CreatePoolDTO = {
@@ -14,16 +21,5 @@ export type CreatePoolDTO = {
   tokenMintB: string
   tickSpacing: number
   initialPrice?: number
-}
-
-export type BuildPoolPDADTO = {
-  tokenMintA: string
-  tokenMintB: string
-  tickSpacing: number
-  programId: PublicKey
-}
-
-export type GetTokenInfoDTO = {
-  connection: Connection
-  tokenMint: string
+  account: string
 }
