@@ -1,21 +1,25 @@
+import { env } from '@/env'
 import { publicProcedure } from '@/server/api/trpc'
+import { RequiredFieldError } from '@/utils/errors/required-field-error'
 import { z } from 'zod'
 
 export const readPool = publicProcedure
   .input(
     z.object({
-      publicKey: z.string(),
+      account: z.string().nonempty('Connect your wallet!'),
       perPage: z.number().optional(),
       page: z.number().optional(),
     }),
   )
   .query(async ({ ctx, input }) => {
-    console.log('input RPC')
-    const accounts = await ctx.solana.program.account.whirlpool.all([
+    if (!input?.account) throw new RequiredFieldError('Account')
+    const { program } = ctx.solana(input.account)
+
+    const accounts = await program.account.whirlpool.all([
       {
         memcmp: {
           offset: 8,
-          bytes: input.publicKey,
+          bytes: env.server.CONFIG_WALLET_PUBLIC_KEY,
         },
       },
     ])
