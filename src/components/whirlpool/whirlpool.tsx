@@ -5,10 +5,12 @@ export function WhirlpoolData() {
   const { mutate: createPool } = whirlpoolProgram.useCreatePool()
   const { mutate } = whirlpoolProgram.useOpenPosition()
   const { data } = whirlpoolProgram.usePools()
+  const { data: positions } = whirlpoolProgram.useFetchPositions()
 
   // Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr
 
   console.log('pools', data)
+  console.log('POSITIONS', positions)
   return (
     <div className={'space-y-6'}>
       <h1>test</h1>
