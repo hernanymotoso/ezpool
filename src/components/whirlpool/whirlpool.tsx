@@ -4,6 +4,7 @@ import * as whirlpoolProgram from '@/hooks/whirlpool'
 export function WhirlpoolData() {
   const { mutate: createPool } = whirlpoolProgram.useCreatePool()
   const { mutate } = whirlpoolProgram.useOpenPosition()
+  const { mutate: closePosition } = whirlpoolProgram.useClosePosition()
   const { data } = whirlpoolProgram.usePools()
   const { data: positions } = whirlpoolProgram.useFetchPositions()
 
@@ -35,6 +36,15 @@ export function WhirlpoolData() {
         }
       >
         Create position
+      </button>
+      <button
+        onClick={() =>
+          closePosition({
+            positionMintAddress: 'FGG3XzZVnZYmZxgNQuLexzUFrji6gY5RQ3P7gAjog1Hq',
+          })
+        }
+      >
+        Close position
       </button>
     </div>
   )

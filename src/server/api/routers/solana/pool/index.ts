@@ -4,6 +4,7 @@ import { createPool } from './create-pool'
 import { configRouter } from './config'
 import { openPosition } from './open-position'
 import { fetchPositions } from './fetch-positions'
+import { closePosition } from './close-position'
 
 export const poolRouter = createTRPCRouter({
   config: configRouter,
@@ -11,4 +12,5 @@ export const poolRouter = createTRPCRouter({
   createPool,
   openPosition,
   fetchPositions,
+  closePosition,
 })

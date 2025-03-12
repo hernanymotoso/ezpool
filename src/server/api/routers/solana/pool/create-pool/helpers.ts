@@ -45,6 +45,7 @@ export async function getTokenInfo({ connection, tokenMint }: GetTokenInfoDTO) {
     connection.getAccountInfo(new PublicKey(tokenMint)),
     getMint(connection, new PublicKey(tokenMint)),
   ])
+
   if (!tokenInfo?.owner || !mintInfo.address) {
     throw new ResourceNotFoundError('Token Info')
   }
