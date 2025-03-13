@@ -15,6 +15,7 @@ const links: Array<{ label: string; path: string }> = [
   // { label: 'Account', path: '/account' },
   // { label: 'Clusters', path: '/clusters' },
   { label: 'Ezpool Program', path: '/ezpool' },
+  { label: 'Fee Tiers', path: '/fee-tier' },
 ]
 
 export default function RootLayout({
