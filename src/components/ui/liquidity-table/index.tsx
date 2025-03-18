@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/table'
 import * as whirlpoolProgram from '@/hooks/whirlpool'
 import { formatCurrency } from './helpers'
+import { FEE_RATE_RATIO } from '../fee-tier-table'
 
 export default function LiquidityTable() {
   const { data: pools } = whirlpoolProgram.usePools({ perPage: 20, page: 1 })
@@ -24,7 +25,7 @@ export default function LiquidityTable() {
         pool: `${pool.tokenMintA.toString().slice(0, 4)}... / ${pool.tokenMintB
           .toString()
           .slice(0, 4)}...`,
-        feeRate: `${(pool.feeRate / 10000).toFixed(3)}%`,
+        feeRate: `${(pool.feeRate / FEE_RATE_RATIO).toFixed(2)}%`,
         liquidity: pool.liquidity.toString(),
         liquidityC: formatCurrency(Number(pool.liquidity)),
       }
