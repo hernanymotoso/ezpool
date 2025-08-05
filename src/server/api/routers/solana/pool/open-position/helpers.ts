@@ -1,6 +1,14 @@
-import { Commitment, Connection, PublicKey } from '@solana/web3.js'
-import { BN } from '@coral-xyz/anchor'
-import Decimal from 'decimal.js'
+import {
+  increase_liquidity_quote,
+  increase_liquidity_quote_a,
+  increase_liquidity_quote_b,
+} from '@/lib/wasm/pkg/orca_whirlpools_core'
+import {
+  Commitment,
+  Connection,
+  PublicKey,
+  TransactionInstruction,
+} from '@solana/web3.js'
 
 const DEFAULT_SPACE = 200
 export const TICK_ARRAY_SIZE = 88 // Whirlpool constant
@@ -104,114 +112,96 @@ function decodeTickArray(data: Buffer): any {
   return { decodedData: data.toString() }
 }
 
-interface IncreaseLiquidityQuote {
-  tokenMaxA: BN
-  tokenMaxB: BN
-  liquidityAmount: BN
+export interface IncreaseLiquidityQuote {
+  liquidityDelta: bigint
+  tokenEstA: bigint
+  tokenEstB: bigint
+  tokenMaxA: bigint
+  tokenMaxB: bigint
 }
 
-interface QuoteParams {
-  liquidityDelta: BN | bigint | string
-  slippageToleranceBps: number
-  currentSqrtPrice: Decimal | string
-  tickIndex1: number
-  tickIndex2: number
-  transferFeeA?: number
-  transferFeeB?: number
+/**
+ * Represents the parameters for increasing liquidity.
+ * You must choose only one of the properties (`liquidity`, `tokenA`, or `tokenB`).
+ * The SDK will compute the other two based on the input provided.
+ */
+export type IncreaseLiquidityQuoteParam =
+  | {
+      /** The amount of liquidity to increase. */
+      liquidity: bigint
+    }
+  | {
+      /** The amount of Token A to add. */
+      tokenA: bigint
+    }
+  | {
+      /** The amount of Token B to add. */
+      tokenB: bigint
+    }
+
+/**
+ * Represents the instructions and quote for increasing liquidity in a position.
+ */
+export type IncreaseLiquidityInstructions = {
+  /** The quote object with details about the increase in liquidity, including the liquidity delta, estimated tokens, and maximum token amounts based on slippage tolerance. */
+  quote: IncreaseLiquidityQuote
+
+  /** List of Solana transaction instructions to execute. */
+  instructions: TransactionInstruction[]
 }
 
-export function increaseLiquidityQuote({
-  liquidityDelta,
-  slippageToleranceBps,
-  currentSqrtPrice,
-  tickIndex1,
-  tickIndex2,
-  transferFeeA = 0,
-  transferFeeB = 0,
-}: QuoteParams): IncreaseLiquidityQuote {
-  try {
-    const liquidity = new BN(liquidityDelta.toString())
-    const sqrtPrice = new Decimal(currentSqrtPrice.toString())
+export interface TransferFee {
+  feeBps: number
+  maxFee: bigint
+}
 
-    const [lowerTickIndex, upperTickIndex] = [
-      Math.min(tickIndex1, tickIndex2),
-      Math.max(tickIndex1, tickIndex2),
-    ]
-
-    const sqrtPriceLower = getSqrtPriceAtTick(lowerTickIndex)
-    const sqrtPriceUpper = getSqrtPriceAtTick(upperTickIndex)
-
-    const tokenAAmount = calculateTokenA(
-      liquidity,
-      sqrtPrice,
-      sqrtPriceLower,
-      sqrtPriceUpper,
+export function getIncreaseLiquidityQuote(
+  param: IncreaseLiquidityQuoteParam,
+  pool: any,
+  tickLowerIndex: number,
+  tickUpperIndex: number,
+  slippageToleranceBps: number,
+  transferFeeA: TransferFee | undefined,
+  transferFeeB: TransferFee | undefined,
+): IncreaseLiquidityQuote {
+  if ('liquidity' in param) {
+    console.log('increase_liquidity_quote PARAMS', {
+      liquidity_delta: param.liquidity,
+      slippage_tolerance_bps: slippageToleranceBps,
+      current_sqrt_price: pool.sqrtPrice.toString(),
+      tick_index_1: tickLowerIndex,
+      tick_index_2: tickUpperIndex,
+      transfer_fee_a: transferFeeA,
+      transfer_fee_b: transferFeeB,
+    })
+    return increase_liquidity_quote(
+      param.liquidity,
+      slippageToleranceBps,
+      BigInt(pool.sqrtPrice.toString()),
+      tickLowerIndex,
+      tickUpperIndex,
+      transferFeeA,
+      transferFeeB,
     )
-    const tokenBAmount = calculateTokenB(
-      liquidity,
-      sqrtPrice,
-      sqrtPriceLower,
-      sqrtPriceUpper,
+  } else if ('tokenA' in param) {
+    return increase_liquidity_quote_a(
+      param.tokenA,
+      slippageToleranceBps,
+      BigInt(pool.sqrtPrice.toString()),
+      tickLowerIndex,
+      tickUpperIndex,
+      transferFeeA,
+      transferFeeB,
     )
-
-    const slippageFactor = new Decimal(1 + slippageToleranceBps / 10000)
-    const tokenMaxA = new BN(tokenAAmount.mul(slippageFactor).ceil().toString())
-    const tokenMaxB = new BN(tokenBAmount.mul(slippageFactor).ceil().toString())
-
-    if (transferFeeA > 0) {
-      const feeFactorA = new Decimal(1 + transferFeeA / 10000)
-      tokenMaxA.imul(new BN(feeFactorA.ceil().toString()))
-    }
-    if (transferFeeB > 0) {
-      const feeFactorB = new Decimal(1 + transferFeeB / 10000)
-      tokenMaxB.imul(new BN(feeFactorB.ceil().toString()))
-    }
-
-    return {
-      tokenMaxA,
-      tokenMaxB,
-      liquidityAmount: liquidity,
-    }
-  } catch (error) {
-    throw new Error(`Failed to calculate liquidity quote: ${error}`)
+  } else {
+    return increase_liquidity_quote_b(
+      param.tokenB,
+      slippageToleranceBps,
+      BigInt(pool.sqrtPrice.toString()),
+      tickLowerIndex,
+      tickUpperIndex,
+      transferFeeA,
+      transferFeeB,
+    )
   }
-}
-
-function getSqrtPriceAtTick(tick: number): Decimal {
-  const power = new Decimal(tick).div(2).div(Decimal.log10(1.0001))
-  return new Decimal(1.0001).pow(power)
-}
-
-function calculateTokenA(
-  liquidity: BN,
-  currentSqrtPrice: Decimal,
-  sqrtPriceLower: Decimal,
-  sqrtPriceUpper: Decimal,
-): Decimal {
-  const liq = new Decimal(liquidity.toString())
-  if (currentSqrtPrice.lessThan(sqrtPriceLower)) {
-    return liq
-      .mul(sqrtPriceUpper.minus(sqrtPriceLower))
-      .div(sqrtPriceUpper.mul(sqrtPriceLower))
-  } else if (currentSqrtPrice.lessThan(sqrtPriceUpper)) {
-    return liq
-      .mul(sqrtPriceUpper.minus(currentSqrtPrice))
-      .div(sqrtPriceUpper.mul(currentSqrtPrice))
-  }
-  return new Decimal(0)
-}
-
-function calculateTokenB(
-  liquidity: BN,
-  currentSqrtPrice: Decimal,
-  sqrtPriceLower: Decimal,
-  sqrtPriceUpper: Decimal,
-): Decimal {
-  const liq = new Decimal(liquidity.toString())
-  if (currentSqrtPrice.lessThan(sqrtPriceLower)) {
-    return new Decimal(0)
-  } else if (currentSqrtPrice.lessThan(sqrtPriceUpper)) {
-    return liq.mul(currentSqrtPrice.minus(sqrtPriceLower))
-  }
-  return liq.mul(sqrtPriceUpper.minus(sqrtPriceLower))
 }

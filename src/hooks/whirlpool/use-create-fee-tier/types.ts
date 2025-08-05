@@ -1,13 +1,7 @@
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  VersionedTransaction,
-} from '@solana/web3.js'
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 
 export type RequestThis = {
   userWallerPublicKey?: PublicKey
-  connection: Connection
   signTransaction:
     | (<T extends Transaction | VersionedTransaction>(
         transaction: T,

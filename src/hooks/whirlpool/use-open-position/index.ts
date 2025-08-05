@@ -42,7 +42,9 @@ export function useOpenPosition() {
   return useMutation({
     mutationKey: ['whirlpool', 'open-position'],
     mutationFn: request.bind({
-      openPosition,
+      openPosition: openPosition as (
+        dto: OpenPositionDTO,
+      ) => Promise<{ serializedTransaction: string }>,
       userWallerPublicKey: publicKey,
       signTransaction,
       connection,

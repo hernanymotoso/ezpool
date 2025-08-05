@@ -1,8 +1,12 @@
 import { env } from '@/env'
+import { initializeWasm, price_to_sqrt_price } from '@/lib/wasm/init'
+import {
+  buildFeeTierPDA,
+  getKeypairFromSecretKey,
+} from '@/server/api/routers/solana/helpers'
 import { publicProcedure } from '@/server/api/trpc'
 import { ResourceNotFoundError } from '@/utils/errors'
 import { RequiredFieldError } from '@/utils/errors/required-field-error'
-import { PriceMath } from '@/utils/math/price-math'
 import {
   Keypair,
   PublicKey,
@@ -10,13 +14,9 @@ import {
   SYSVAR_RENT_PUBKEY,
   Transaction,
 } from '@solana/web3.js'
-import Decimal from 'decimal.js'
+import { BN } from 'bn.js'
 import { z } from 'zod'
 import { buildPoolPDA, buildTokenBadgePDA, getTokenInfo } from './helpers'
-import {
-  buildFeeTierPDA,
-  getKeypairFromSecretKey,
-} from '@/server/api/routers/solana/helpers'
 
 export const createPool = publicProcedure
   .input(
@@ -31,16 +31,25 @@ export const createPool = publicProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
+    try {
+      await initializeWasm()
+    } catch (error) {
+      console.error('Failed to initialize WASM:', error)
+      throw new Error('Failed to initialize required dependencies')
+    }
+
     if (!input?.account) throw new RequiredFieldError('Account')
     const { account, tokenMintA, tokenMintB, tickSpacing, initialPrice } = input
     const sender = new PublicKey(account)
     const { program, connection } = ctx.solana(account)
 
+    console.log({ initialPrice, tickSpacing })
+
     const feeTierPDA = buildFeeTierPDA(tickSpacing, program.programId)
     const feeTierAccount = await program.account.feeTier.fetch(feeTierPDA)
     if (!feeTierAccount?.tickSpacing) throw new ResourceNotFoundError('FeeTier')
 
-    const poolPDA = buildPoolPDA({
+    const { poolPDA, poolBump } = buildPoolPDA({
       tokenMintA,
       tokenMintB,
       tickSpacing: feeTierAccount.tickSpacing,
@@ -59,8 +68,8 @@ export const createPool = publicProcedure
       tokenMint: tokenMintA,
     })
 
-    const initialSqrtPrice = PriceMath.priceToSqrtPriceX64(
-      new Decimal(initialPrice || 1),
+    const initialSqrtPrice = price_to_sqrt_price(
+      initialPrice || 1,
       tokenInfoA.decimals,
       tokenInfoB.decimals,
     )
@@ -91,7 +100,11 @@ export const createPool = publicProcedure
     }
 
     const instruction = await program.methods
-      .initializePoolV2(tickSpacing, initialSqrtPrice)
+      .initializePool(
+        { whirlpoolBump: poolBump },
+        tickSpacing,
+        new BN(initialSqrtPrice.toString()),
+      )
       .accounts(context)
       .signers([funderKeypair, tokenVaultKeypair, tokenVaultBKeypair])
       .instruction()

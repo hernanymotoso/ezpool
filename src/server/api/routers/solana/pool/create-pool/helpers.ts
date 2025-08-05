@@ -13,7 +13,7 @@ export function buildPoolPDA({
 }: BuildPoolPDADTO) {
   const tickSpacingBuffer = buildTickSpacingBuffer(tickSpacing)
 
-  const [poolPDA] = PublicKey.findProgramAddressSync(
+  const [poolPDA, poolBump] = PublicKey.findProgramAddressSync(
     [
       Buffer.from('whirlpool'),
       new PublicKey(env.server.CONFIG_WALLET_PUBLIC_KEY).toBuffer(),
@@ -24,7 +24,7 @@ export function buildPoolPDA({
     programId,
   )
 
-  return poolPDA
+  return { poolPDA, poolBump }
 }
 
 export function buildTokenBadgePDA(tokenMint: string, programId: PublicKey) {

@@ -2,6 +2,7 @@ import * as whirlpoolProgram from '@/hooks/whirlpool'
 import React, { useState } from 'react'
 import { Card } from '../card'
 import { FEE_RATE_RATIO } from '../fee-tier-table'
+import { useTest } from '@/hooks/whirlpool/use-test'
 
 export function CreateFeeTierForm() {
   const [isOpen, setIsOpen] = useState(false)
@@ -30,6 +31,8 @@ export function CreateFeeTierForm() {
       [name]: Number(value),
     }))
   }
+
+  const { mutate: test } = useTest()
 
   return (
     <div className="w-full">
@@ -79,7 +82,7 @@ export function CreateFeeTierForm() {
                     }))
                   }}
                   min="0.01"
-                  max="100"
+                  max="900"
                   step="0.01"
                   className="w-full p-2 bg-[#1a1f2e] border border-gray-700 rounded-md text-white pr-8"
                   required
@@ -102,6 +105,14 @@ export function CreateFeeTierForm() {
           </form>
         </Card>
       )}
+
+      <button
+        onClick={() => test({ defaultProtocolFeeRate: 22 })}
+        disabled={isPending}
+        className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-md transition-colors"
+      >
+        {isPending ? 'Creating Fee Tier...' : 'Create Fee Tier'}
+      </button>
     </div>
   )
 }
