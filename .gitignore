@@ -36,3 +36,6 @@ yarn-error.log*
 next-env.d.ts
 tmp
 src/wallets/*
+anchor/programs/core/target/*
+anchor/programs/macros/target/*
+target/*

@@ -12,18 +12,29 @@ export const createFeeTier = publicProcedure
   .input(
     z.object({
       account: z.string().nonempty({ message: 'Connect your wallet!' }),
-      tickSpacing: z.number(),
-      defaultFeeRate: z.number(),
+      tickSpacing: z.number().int().positive(),
+      defaultFeeRate: z
+        .number({
+          required_error: 'Default Fee Rate is required',
+          invalid_type_error: 'Default Fee Rate must be a number',
+        })
+        .int()
+        .nonnegative(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
     if (!input?.account) throw new RequiredFieldError('Account')
+    if (!input?.defaultFeeRate) throw new RequiredFieldError('Default Fee Rate')
+    if (!input?.tickSpacing) throw new RequiredFieldError('Tick Spacing')
     const { program } = ctx.solana(input.account)
     const funderKeypair = getKeypairFromSecretKey(
       env.server.FUNDER_WALLET_SECRET_KEY,
     )
 
     const feeTierPda = buildFeeTierPDA(input.tickSpacing, program.programId)
+
+    console.log('defaultFeeRate', input.defaultFeeRate)
+    console.log('tickSpacing', input.tickSpacing)
 
     return await program.methods
       .initializeFeeTier(input.tickSpacing, input.defaultFeeRate)
