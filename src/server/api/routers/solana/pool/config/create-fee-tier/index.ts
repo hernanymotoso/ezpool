@@ -26,25 +26,29 @@ export const createFeeTier = publicProcedure
     if (!input?.account) throw new RequiredFieldError('Account')
     if (!input?.defaultFeeRate) throw new RequiredFieldError('Default Fee Rate')
     if (!input?.tickSpacing) throw new RequiredFieldError('Tick Spacing')
-    const { program } = ctx.solana(input.account)
     const funderKeypair = getKeypairFromSecretKey(
       env.server.FUNDER_WALLET_SECRET_KEY,
     )
+    const { program } = ctx.solana(funderKeypair.publicKey.toString())
 
     const feeTierPda = buildFeeTierPDA(input.tickSpacing, program.programId)
 
-    console.log('defaultFeeRate', input.defaultFeeRate)
-    console.log('tickSpacing', input.tickSpacing)
+    console.log('defaultFeeRate:', input.defaultFeeRate)
+    console.log('tickSpacing:', input.tickSpacing)
+    const tx = null
 
-    return await program.methods
-      .initializeFeeTier(input.tickSpacing, input.defaultFeeRate)
-      .accounts({
-        config: env.server.CONFIG_WALLET_PUBLIC_KEY,
-        feeTier: feeTierPda,
-        funder: funderKeypair.publicKey,
-        feeAuthority: funderKeypair.publicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([funderKeypair])
-      .rpc()
+    console.log('feeTierPda:', funderKeypair.publicKey.toString())
+
+    // tx = await program.methods
+    //   .initializeFeeTier(input.tickSpacing, input.defaultFeeRate)
+    //   .accounts({
+    //     config: env.server.CONFIG_WALLET_PUBLIC_KEY,
+    //     feeTier: feeTierPda,
+    //     funder: funderKeypair.publicKey,
+    //     feeAuthority: funderKeypair.publicKey,
+    //     systemProgram: SystemProgram.programId,
+    //   })
+    //   .signers([funderKeypair])
+    //   .rpc({ skipPreflight: true })
+    return tx
   })
