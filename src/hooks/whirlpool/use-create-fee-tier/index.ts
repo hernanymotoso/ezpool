@@ -1,5 +1,5 @@
 import { api } from '@/trpc/react'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { useMutation } from '@tanstack/react-query'
 import { CreateFeeTierDTO, RequestThis } from './types'
 
@@ -18,7 +18,6 @@ async function request(
 
 export function useCreateFeeTier() {
   const { publicKey, signTransaction } = useWallet()
-  const { connection } = useConnection()
 
   const { mutateAsync: createFeeTier } =
     api.solana.pool.config.createFeeTier.useMutation()
@@ -29,7 +28,6 @@ export function useCreateFeeTier() {
       createFeeTier,
       userWallerPublicKey: publicKey!,
       signTransaction,
-      connection,
     }),
     onSuccess(data) {
       console.log('Create fee tier data:', data)
